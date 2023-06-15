@@ -2,6 +2,9 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, Button, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import Voice from '@react-native-voice/voice';
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
+LogBox.ignoreAllLogs(); //Ignore all log notifications
 
 export default function App() {
 
@@ -17,9 +20,29 @@ export default function App() {
     } 
   }, []);
 
+  const openApp = () => {
+    // Logic to open the app or perform related actions
+    console.log('Opening the app...');
+  }
+
+  const closeApp = () => {
+    // Logic to close the app or perform related actions
+    console.log('Closing the app...');
+  }
+
+  const commands = [
+    { command: 'open', callback: openApp },
+    { command: 'close', callback: closeApp },
+    // Add more commands as needed
+  ];
+
   const startSpeechToText = async () => {
-    await Voice.start("en-US");
-    setStarted(true);
+    try {
+      await Voice.start("en-US");
+      setStarted(true);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   const stopSpeechToText = async () => {
@@ -28,7 +51,16 @@ export default function App() {
   }
 
   const onSpeechResults = (result:any) => {
-    setResults(result.value)
+    const spokenText = result.value[0].toLowerCase(); // Get the recognized text
+    console.log(spokenText);
+    //setResults(result.value)
+    // Loop through the commands array to check if the spoken text matches any command
+    for (const { command, callback } of commands) {
+      if (spokenText.includes(command)) {
+        callback();
+        break; // Exit the loop after the first match
+      }
+    }
   }
 
   const onSpeechError = (error:any) => {
