@@ -13,10 +13,16 @@ LogBox.ignoreAllLogs(); //Ignore all log notifications
  * 
  */
 
+type CommandData = {
+  command: string;
+  value?: string | number;
+};
+
 export default function App() {
 
   let [started, setStarted] = useState(false);
   let [results, setResults] = useState([]);
+  let [commandData, setCommandData] = useState<CommandData[]>([]);
 
   const recognitionTimeoutRef: MutableRefObject<ReturnType<typeof setTimeout> | null> = useRef(null);
 
@@ -32,23 +38,49 @@ export default function App() {
   const openApp = () => {
     // Logic to open the app or perform related actions
     console.log('Opening the app...');
+    setCommandData((prevCommandData) => [...prevCommandData, { command: 'open', value: undefined }]);
   }
 
   const closeApp = () => {
     // Logic to close the app or perform related actions
     console.log('Closing the app...');
+    stopSpeechToText();
+    setCommandData([]);
+  }
+
+  const countCommand = (params: string) => {
+    const value = parseInt(params.replace(/\s/g, ''), 10);
+    if (!isNaN(value)) {
+      console.log(`Count command: ${value}`);
+      setCommandData((prevCommandData) => [...prevCommandData, { command: 'count', value }]);
+    } else {
+      console.log('Invalid count command. Ignoring.');
+    }
+  }
+
+  const resetCommand = () => {
+    console.log('Reset command');
+    setCommandData([]);
+  }
+
+  const backCommand = () => {
+    console.log('Back command');
+    setCommandData((prevCommandData) => prevCommandData.slice(0, -1));
   }
 
   const commands = [
     { command: 'open', callback: openApp },
     //{ command: 'ouvrir', callback: openApp },
     { command: 'close', callback: closeApp },
+    { command: 'count', callback: countCommand },
+    { command: 'reset', callback: resetCommand },
+    { command: 'back', callback: backCommand },
     // Add more commands as needed
   ];
 
   const startSpeechToText = async () => {
     try {
-      await Voice.start("en-US", { RECOGNIZER_ENGINE: "" });
+      await Voice.start("en-US");
       //await Voice.start("fr-FR");
       setStarted(true);
       recognitionTimeoutRef.current = setTimeout(() => {
@@ -72,15 +104,30 @@ export default function App() {
     console.log(spokenText);
     //setResults(result.value)
     // Check if any recognized word matches a command
+
+    // Check if the spoken text matches the count command pattern
+    const countMatch = spokenText.match(/count (\w+)/);
+    if (countMatch) {
+      const countValue = parseInt(countMatch[1], 10); // Extract the numerical value
+      const countCommandData = {
+        command: 'count',
+        value: countValue,
+      };
+      setCommandData((prevCommandData) => [...prevCommandData, countCommandData]);
+      return;
+    }
+  
     const commandMatched = commands.some(({ command, callback }) => {
       if (spokenText.includes(command)) {
-        callback();
+        const params = spokenText.replace(command, '').trim();
+        callback(params);
         console.log('goes here true')
         return true;
       }
       console.log('goes here false')
       return false;
     });
+
 
     if (!commandMatched) {
       console.log('goes here not in array')
@@ -96,6 +143,10 @@ export default function App() {
     <View style={styles.container}>
       { !started ? <Button title='Start to listen' onPress={startSpeechToText}></Button> : undefined } 
       { started ? <Button title='Stop listening' onPress={stopSpeechToText}></Button> : undefined }
+      <Text>Command Data:</Text>
+      {commandData.map((command, index) => (
+        <Text key={index}>{JSON.stringify(command)}</Text>
+      ))}
       <StatusBar style="auto" />
     </View>
   );
