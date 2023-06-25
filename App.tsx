@@ -6,6 +6,8 @@ import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
 LogBox.ignoreAllLogs(); //Ignore all log notifications
 
+import OutputList from './components/outputList';
+
 /**
  * 
  * On Android devices, there is a time limit for continuous speech recognition to 
@@ -248,11 +250,21 @@ export default function App() {
       <Text style={styles.speechTitle}>Current Speech</Text>
       <Text style={styles.speech}>{spokenText}</Text>
     </View>
-    <Text>Command Data:</Text>
+    <View>
+      {listening ? <Text style={styles.listeningContainer}>listening...</Text> : undefined}
+    </View>
+
+    <OutputList />
+
+    {/*
+    <View style={styles.speechContainer}>
+      <Text>Data:</Text>
       {commandData.map((command, index) => (
         <Text key={index}>{JSON.stringify(command)}</Text>
       ))}
       <StatusBar style="auto" />
+    </View>
+    */}
 
     <View style={styles.bottomMenu}>
       {!listening ? (
@@ -262,7 +274,6 @@ export default function App() {
       ) : (
         undefined
       )}
-      {listening ? <Text>listening...</Text> : undefined}
       {listening ? (
         <TouchableOpacity style={styles.menuItem} onPress={stopSpeechToText}>
           <Text style={styles.menuItemText}>Stop Listening</Text>
@@ -354,7 +365,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 35,
     marginHorizontal: 10,
-    width: 365, /** to adjust something wrong */
+    width: 395, /** to adjust something wrong */
   },
   statusTitle: {
     fontSize: 24,
@@ -379,7 +390,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     marginHorizontal: 10,
-    width: 365, /** to adjust something wrong */
+    width: 395, /** to adjust something wrong */
   },
   speechTitle: {
     fontSize: 24,
@@ -390,6 +401,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+  },
+
+  listeningContainer: {
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+    marginHorizontal: 10,
+    width: 395, /** to adjust something wrong */
   },
 
 });
