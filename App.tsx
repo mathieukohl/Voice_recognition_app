@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 35,
     marginHorizontal: 10,
-    width: 395, /** to adjust something wrong */
+    width:'95%', /** to adjust something wrong */
   },
   statusTitle: {
     fontSize: 24,
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     marginHorizontal: 10,
-    width: 395, /** to adjust something wrong */
+    width: '95%', /** to adjust something wrong */
   },
   speechTitle: {
     fontSize: 24,
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     marginHorizontal: 10,
-    width: 395, /** to adjust something wrong */
+    width: '95%',
   },
 
 });
