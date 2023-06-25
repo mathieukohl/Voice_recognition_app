@@ -27,6 +27,8 @@ export default function App() {
   let [parameters, setParameters] = useState('');
   let [spokenText, setSpokenText] = useState('');
   let [commandData, setCommandData] = useState<CommandData[]>([]);
+  let [selectedLanguage, setSelectedLanguage] = useState("en-US"); // Default language is "en-US"
+  let [showDropdown, setShowDropdown] = useState(false);
 
   let isSpeechStopped = false;
   const recognitionTimeoutRef: MutableRefObject<ReturnType<typeof setTimeout> | null> = useRef(null);
@@ -40,6 +42,15 @@ export default function App() {
       Voice.destroy().then(Voice.removeAllListeners);
     } 
   }, []);
+
+  const handleLanguageChange = (language:any) => {
+    setSelectedLanguage(language);
+    if (started) {
+      stopSpeechToText();
+      startSpeechToText();
+    }
+    setShowDropdown(false);
+  };
 
   const openApp = () => {
     // Logic to open the app or perform related actions
@@ -90,8 +101,7 @@ export default function App() {
 
   const startSpeechToText = async () => {
     try {
-      await Voice.start("en-US");
-      //await Voice.start("fr-FR");
+      await Voice.start(selectedLanguage);
       const timeout = setTimeout(stopSpeechToText, 5000);
       setTimeoutRef(timeout);
       setListening(true);
@@ -223,27 +233,11 @@ export default function App() {
     }
   }
 
-  return (
-    /*
-    <View style={styles.container}>
-      {!listening ? (
-        <Button title="Start to listen" onPress={startSpeechToText} />
-      ) : (
-        undefined
-      )}
-      {listening ? <Text>listening...</Text> : undefined}
-      {listening ? (
-        <Button title="Stop listening" onPress={stopSpeechToText} />
-      ) : (
-        undefined
-      )}
-       <Text>Command Data:</Text>
-      {commandData.map((command, index) => (
-        <Text key={index}>{JSON.stringify(command)}</Text>
-      ))}
-      <StatusBar style="auto" />
-    </View>
-    */
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  return ( 
   <View style={styles.container}>
     <View style={styles.statusContainer}>
       <Text style={styles.statusTitle}>Current Status</Text>
@@ -276,8 +270,28 @@ export default function App() {
       ) : (
         undefined
       )}
+      <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
+        <Text style={styles.dropdownButtonText}>{selectedLanguage}</Text>
+      </TouchableOpacity>
     </View>
   {/* Dropdown list */}
+  {showDropdown && (
+      <View style={styles.dropdownList}>
+        <TouchableOpacity
+          style={styles.dropdownListItem}
+          onPress={() => handleLanguageChange('en-US')}
+        >
+          <Text style={styles.dropdownListItemText}>English</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.dropdownListItem}
+          onPress={() => handleLanguageChange('fr-FR')}
+        >
+          <Text style={styles.dropdownListItemText}>French</Text>
+        </TouchableOpacity>
+        {/* Add more language options as needed */}
+      </View>
+    )}
   </View>
   );
 }
