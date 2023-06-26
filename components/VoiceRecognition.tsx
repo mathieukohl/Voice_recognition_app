@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState, useRef, MutableRefObject } from 'react';
 import Voice from '@react-native-voice/voice';
 import OutputList from './OutputList';
