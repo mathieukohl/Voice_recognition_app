@@ -2,6 +2,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState, useRef, MutableRefObject } from 'react';
 import Voice from '@react-native-voice/voice';
 import OutputList from './OutputList';
+import { database } from '../firebase'
+import { ref } from  'firebase/database';
 
 /** to remove and fix the WARN */
 import { LogBox } from 'react-native';
@@ -11,6 +13,7 @@ LogBox.ignoreAllLogs(); //Ignore all log notifications
 type CommandData = {
     command: string;
     value?: string | number;
+    countValue?: number;
   };
 
 export default function VoiceRecognition() {
@@ -22,6 +25,7 @@ let [started, setStarted] = useState(false);
   let [parameters, setParameters] = useState('');
   let [spokenText, setSpokenText] = useState('');
   let [commandData, setCommandData] = useState<CommandData[]>([]);
+  let [data, setData] = useState<CommandData[]>([]);
   let [selectedLanguage, setSelectedLanguage] = useState("en-US"); // Default language is "en-US"
   let [showDropdown, setShowDropdown] = useState(false);
 
@@ -50,7 +54,7 @@ let [started, setStarted] = useState(false);
   const openApp = () => {
     // Logic to open the app or perform related actions
     console.log('Opening the app...');
-    setCommandData((prevCommandData) => [...prevCommandData, { command: 'open', value: undefined }]);
+    setCommandData((prevCommandData) => [...prevCommandData, { command: 'open', value: undefined, countValue: undefined }]);
     setStatus('open');
     setParameters('');
   }
@@ -66,7 +70,8 @@ let [started, setStarted] = useState(false);
     const value = parseInt(params.replace(/\s/g, ''), 10);
     if (!isNaN(value)) {
       console.log(`Count command: ${value}`);
-      setCommandData((prevCommandData) => [...prevCommandData, { command: 'count', value }]);
+      //to test with the countValue: undefined
+      setCommandData((prevCommandData) => [...prevCommandData, { command: 'count', value, countValue: undefined }]);
       setStatus('count');
       setParameters(value.toString());
     } else {
@@ -118,6 +123,23 @@ let [started, setStarted] = useState(false);
     stopSpeechToText(); // Stop the speech recognition when any speech is detected
     setStarted(false);
 
+    // // Check if the spoken text matches the code command pattern
+    // const codeMatch = spokenText.match(/code (\w+)/);
+    // if (codeMatch) {
+    //   const codeNumbers = codeMatch[1].split(' '); // Split the spoken numbers by spaces
+    //   const codeValue = processCodeCommand(codeNumbers); // Process the spoken numbers as a code command
+    //   if (codeValue !== null) {
+    //     const codeCommandData = {
+    //       command: 'code',
+    //       value: codeValue.value,
+    //     };
+    //     setCommandData((prevCommandData) => [...prevCommandData, codeCommandData]);
+    //   } else {
+    //     console.log('Invalid code'); // Handle invalid code numbers
+    //   }
+    //   return;
+    // }
+
     // Check if the spoken text matches the code command pattern
     const codeMatch = spokenText.match(/code (\w+)/);
     if (codeMatch) {
@@ -127,25 +149,63 @@ let [started, setStarted] = useState(false);
         const codeCommandData = {
           command: 'code',
           value: codeValue.value,
+          countValue: undefined, 
         };
-        setCommandData((prevCommandData) => [...prevCommandData, codeCommandData]);
+        // Add the codeCommandData to the Firebase database
+        database.ref('commands').push(codeCommandData)
+        .then(() => {
+          console.log('New line added to Firebase database');
+        })
+        .catch((error:any) => {
+          console.log('Error adding new line to Firebase database:', error);
+        });
       } else {
         console.log('Invalid code'); // Handle invalid code numbers
       }
       return;
     }
 
+    // // Check if the spoken text matches the count command pattern
+    // const countMatch = spokenText.match(/count (\w+)/);
+    // if (countMatch) {
+    //   const countNumbers = countMatch[1].split(' '); // Split the spoken numbers by spaces
+    //   const countValue = processCountCommand(countNumbers); // Convert the spoken numbers to a numerical sequence
+    //   if (countValue !== null) {
+    //     const countCommandData = {
+    //       command: 'count',
+    //       value: countValue,
+
+    //     };
+    //     setCommandData((prevCommandData) => [...prevCommandData, countCommandData]);
+    //   } else {
+    //     console.log('Invalid number'); // Handle invalid numbers
+    //   }
+    //   return;
+    // }
     // Check if the spoken text matches the count command pattern
     const countMatch = spokenText.match(/count (\w+)/);
     if (countMatch) {
       const countNumbers = countMatch[1].split(' '); // Split the spoken numbers by spaces
       const countValue = processCountCommand(countNumbers); // Convert the spoken numbers to a numerical sequence
+
       if (countValue !== null) {
-        const countCommandData = {
-          command: 'count',
-          value: countValue,
-        };
-        setCommandData((prevCommandData) => [...prevCommandData, countCommandData]);
+        // Check if the value already exists in the data array
+        const existingIndex = data.findIndex(item => item.value === parseInt(countValue));
+
+        if (existingIndex !== -1) {
+          // Value already exists, update the countValue
+          const updatedData = [...data];
+          updatedData[existingIndex].countValue = parseInt(countValue);
+          setData(updatedData);
+        } else {
+          // Value doesn't exist, add a new data object
+          const countCommandData = {
+            command: 'code',
+            value: parseInt(countValue),
+            countValue: parseInt(countValue),
+          };
+          setData(prevData => [...prevData, countCommandData]);
+        }
       } else {
         console.log('Invalid number'); // Handle invalid numbers
       }
@@ -222,7 +282,6 @@ let [started, setStarted] = useState(false);
       } else {
         console.log("An error occurred while processing speech");
       }
-  
       stopSpeechToText(); // Stop the speech recognition when an error occurs
       isSpeechStopped = true; // Set the flag to true to prevent further stopping attempts
     }

@@ -1,29 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, DataSnapshot } from  '@firebase/database';
-// import { initializeApp } from 'firebase/app';
-// import { getDatabase, ref, onValue, set } from 'firebase/database';
+import { ref, onValue, DataSnapshot } from  '@firebase/database';
+import { database } from '../firebase'
 
 type OutputData = {
   command: string;
   value: number;
   countValue: number;
 };
-
-const firebaseConfig = {
-  // Your Firebase configuration
-  apiKey: "AIzaSyANiQV3RKoUEwyZN8umCbp6UTCe-q8CJQw",
-  authDomain: "zupanvoicereco.firebaseapp.com",
-  databaseURL: "https://zupanvoicereco-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "zupanvoicereco",
-  storageBucket: "zupanvoicereco.appspot.com",
-  messagingSenderId: "105878091174",
-  appId: "1:105878091174:web:d420df7358e95a1fd80b67"
-};
-
-initializeApp(firebaseConfig);
-const database = getDatabase();
 
 
 export default function OutputList() {
