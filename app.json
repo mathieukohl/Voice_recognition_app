@@ -25,6 +25,7 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
       "package": "com.mathieukohl.zupan_voice_recognition"
     },
     "web": {

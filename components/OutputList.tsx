@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, onValue, DataSnapshot } from  '@firebase/database';
+// import { initializeApp } from 'firebase/app';
+// import { getDatabase, ref, onValue, set } from 'firebase/database';
 
 type OutputData = {
   command: string;
@@ -7,19 +11,39 @@ type OutputData = {
   countValue: number;
 };
 
+const firebaseConfig = {
+  // Your Firebase configuration
+  apiKey: "AIzaSyANiQV3RKoUEwyZN8umCbp6UTCe-q8CJQw",
+  authDomain: "zupanvoicereco.firebaseapp.com",
+  databaseURL: "https://zupanvoicereco-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "zupanvoicereco",
+  storageBucket: "zupanvoicereco.appspot.com",
+  messagingSenderId: "105878091174",
+  appId: "1:105878091174:web:d420df7358e95a1fd80b67"
+};
+
+initializeApp(firebaseConfig);
+const database = getDatabase();
+
+
 export default function OutputList() {
-  const [data, setData] = useState<OutputData[]>([
-    { command: 'code', value: 4252, countValue: 18 },
-    { command: 'code', value: 4251, countValue: 9 },
-    { command: 'code', value: 4232, countValue: 27 },
-    { command: 'code', value: 4221, countValue: 44 },
-    { command: 'code', value: 5548, countValue: 2 },
-    { command: 'code', value: 3252, countValue: 1 },
-    { command: 'code', value: 6751, countValue: 34 },
-    { command: 'code', value: 9832, countValue: 2 },
-    { command: 'code', value: 2321, countValue: 1 },
-    { command: 'code', value: 5363, countValue: 0 },
-  ]);
+
+  const [data, setData] = useState<OutputData[]>([]);
+  
+  useEffect(() => {
+    const fetchData = () => {
+      const dataRef = ref(database);
+      onValue(dataRef, (snapshot: DataSnapshot) => {
+        const dataFromFirebase = snapshot.val();
+        if (dataFromFirebase) {
+          const newData = Object.values(dataFromFirebase);
+          setData(newData as OutputData[]);
+        }
+      });
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <View style={styles.container}>
