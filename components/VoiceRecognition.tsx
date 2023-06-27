@@ -28,6 +28,7 @@ let [started, setStarted] = useState(false);
   let [data, setData] = useState<CommandData[]>([]);
   let [selectedLanguage, setSelectedLanguage] = useState("en-US"); // Default language is "en-US"
   let [showDropdown, setShowDropdown] = useState(false);
+  let [message, setMessage] = useState('');
 
   let isSpeechStopped = false;
   const recognitionTimeoutRef: MutableRefObject<ReturnType<typeof setTimeout> | null> = useRef(null);
@@ -92,7 +93,7 @@ let [started, setStarted] = useState(false);
               );
     
               if (existingCodeValue) {
-                console.log('Code value already exists');
+                showMessage('Code value already exists');
                 return;
               }
               
@@ -101,20 +102,20 @@ let [started, setStarted] = useState(false);
     
               // Update the "commandData" node in the database with the updated command data
               set(commandDataRef, updatedCommandDataArray)
-                .catch((error) => {
-                  console.error('Error updating command data:', error);
+                .catch(() => {
+                  showMessage('Error updating command data:');
                 });
             } else {
-              console.log('Command data is null');
+              showMessage('Command data is null');
             }
           }, {
             onlyOnce: true
         });
        } else {
-        console.log('Invalid code'); // Handle invalid code numbers
+        showMessage('Invalid code'); // Handle invalid code numbers
        }
       } else {
-      console.log('Input should contain only numeric characters');
+      showMessage('Input should contain only numeric characters');
     }
   }
 
@@ -144,34 +145,32 @@ let [started, setStarted] = useState(false);
 
                     // Update the "commandData" node in the database with the updated command data
                     set(commandDataRef, commandDataArray)
-                    .catch((error) => {
-                    console.error('Error updating command data:', error);
+                    .catch(() => {
+                    showMessage('Error updating command data:');
                     });
                 } else {
-                    console.log('No code command found in the database');
+                  showMessage('No code command found in the database');
                 }
-                } else {
-                console.log('Command data is null');
-                }
+              } else {
+              showMessage('Command data is null');
+              }
             }, {
                 onlyOnce: true
             });
         } else {
-        console.log('Invalid code'); // Handle invalid code numbers
+        showMessage('Invalid value');
         }
       } else {
-        console.log('Input should contain only numeric characters');
+      showMessage('Input should contain only numeric characters');
     }
   };
 
   const resetCommand = () => {
-    console.log('Reset command');
     setCommandData([]);
   }
 
   // Back Comamand, delete the last line of data
   const backCommand = () => {
-    console.log('Back command');
 
     // Get a reference to the "commandData" node in your database
     const commandDataRef = ref(database);
@@ -237,7 +236,6 @@ let [started, setStarted] = useState(false);
     const commandMatched = commands.some(({ command, callback }) => {
       if (spokenText.includes(command)) {
         const params = spokenText.replace(command, '').trim();
-        console.log('spokenText', spokenText);
         callback(params);
         return true;
       }
@@ -245,16 +243,13 @@ let [started, setStarted] = useState(false);
     });
 
     if (!commandMatched) {
-      console.log('Command not matched');
+      showMessage('Command not matched');
     }
   }
 
   const processCodeCommand = (spokenNumbers: string): { command: string; value: string } | null => {
     const codeNumbers = spokenNumbers.split(' ');
     const codeValue = codeNumbers.join('');
-
-    console.log('codeValue in process',codeValue)
-
     return codeValue.length > 0 ? { command: 'code', value: codeValue } : null;
   };
 
@@ -281,6 +276,10 @@ let [started, setStarted] = useState(false);
     setShowDropdown(!showDropdown);
   };
 
+  function showMessage(message: string) {
+    setMessage(message);
+  }
+
   return ( 
   <View style={styles.container}>
     <View style={styles.statusContainer}>
@@ -293,20 +292,13 @@ let [started, setStarted] = useState(false);
       <Text style={styles.speech}>{spokenText}</Text>
     </View>
     <View>
+      <Text id="message">{message}</Text>
+    </View>
+    <View>
       {listening ? <Text style={styles.listeningContainer}>listening...</Text> : undefined}
     </View>
 
     <OutputList />
-
-    {/*
-    <View style={styles.speechContainer}>
-      <Text>Data:</Text>
-      {commandData.map((command, index) => (
-        <Text key={index}>{JSON.stringify(command)}</Text>
-      ))}
-      <StatusBar style="auto" />
-    </View>
-    */}
 
     <View style={styles.bottomMenu}>
       {!listening ? (
