@@ -61,14 +61,37 @@ let [started, setStarted] = useState(false);
 
   const closeApp = () => {
     console.log('Closing the app...');
+    setStatus('close');
     stopSpeechToText();
     setCommandData([]);
   }
 
+  const numberMap: { [key: string]: string } = {
+    zero: '0',
+    one: '1',
+    two: '2',
+    three: '3',
+    four: '4',
+    five: '5',
+    six: '6',
+    seven: '7',
+    eight: '8',
+    nine: '9',
+  };
+
   const codeCommand = (params: string) => {
+    setStatus('Code');
     const codeMatch = params
-    if (/^\d+$/.test(codeMatch)) {
-        const codeValue = processCodeCommand(codeMatch);
+
+    let modifiedSpokenNumbers = codeMatch;
+
+    Object.entries(numberMap).forEach(([word, number]) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      modifiedSpokenNumbers = modifiedSpokenNumbers.replace(regex, number);
+    });
+
+    if (/^\d+$/.test(modifiedSpokenNumbers)) {
+        const codeValue = processCodeCommand(modifiedSpokenNumbers);
         console.log('codeValue',codeValue)
         if (codeValue !== null) {
           const codeCommandData = {
@@ -99,7 +122,8 @@ let [started, setStarted] = useState(false);
               
               // Add the new code command data to the existing command data array
               const updatedCommandDataArray = [...commandDataArray, codeCommandData];
-    
+              
+              setParameters(codeCommandData.value);
               // Update the "commandData" node in the database with the updated command data
               set(commandDataRef, updatedCommandDataArray)
                 .catch(() => {
@@ -120,9 +144,17 @@ let [started, setStarted] = useState(false);
   }
 
   const countCommand = (params: string) => {
+    setStatus('Count');
     const spokenNumbers = params
-    if (/^\d+$/.test(spokenNumbers)) {
-        const countValue = processCountCommand(spokenNumbers);
+    let modifiedSpokenNumbers = spokenNumbers;
+
+    Object.entries(numberMap).forEach(([word, number]) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      modifiedSpokenNumbers = modifiedSpokenNumbers.replace(regex, number);
+    });
+
+    if (/^\d+$/.test(modifiedSpokenNumbers)) {
+        const countValue = processCountCommand(modifiedSpokenNumbers);
         if (countValue !== null) {
 
             // Get a reference to the "commandData" node in your database
@@ -142,6 +174,8 @@ let [started, setStarted] = useState(false);
                 if (lastCommandData) {
                     // Update the countValue of the last command data
                     lastCommandData.countValue = countValue;
+
+                    setParameters(countValue);
 
                     // Update the "commandData" node in the database with the updated command data
                     set(commandDataRef, commandDataArray)
@@ -166,11 +200,13 @@ let [started, setStarted] = useState(false);
   };
 
   const resetCommand = () => {
+    setStatus('Reset');
     setCommandData([]);
   }
 
   // Back Comamand, delete the last line of data
   const backCommand = () => {
+    setStatus('Back');
 
     // Get a reference to the "commandData" node in your database
     const commandDataRef = ref(database);
@@ -229,6 +265,7 @@ let [started, setStarted] = useState(false);
 
   const onSpeechResults = (result:any) => {
     const spokenText = result.value[0].toLowerCase(); // Get the recognized text
+    console.log('spokenText',spokenText)
     setSpokenText(spokenText);
     stopSpeechToText(); // Stop the speech recognition when any speech is detected
     setStarted(false);
@@ -292,7 +329,7 @@ let [started, setStarted] = useState(false);
       <Text style={styles.speech}>{spokenText}</Text>
     </View>
     <View>
-      <Text id="message">{message}</Text>
+      {message ? <Text style={styles.speechContainer} id="message">{message}</Text> : undefined }
     </View>
     <View>
       {listening ? <Text style={styles.listeningContainer}>listening...</Text> : undefined}
