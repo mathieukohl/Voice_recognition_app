@@ -1,7 +1,7 @@
 import { ref, onValue, DataSnapshot, set } from '@firebase/database';
 import { database } from './firebase';
 
-const spokenText = 'count 1 8';
+const spokenText = 'count 3 0';
 
 const processCountCommand = (spokenNumbers: string): string | null => {    
     const countNumbers = spokenNumbers.split(' ');
@@ -15,12 +15,6 @@ const countCommand = (params: string) => {
     if (spokenNumbers !== null) {
         const countValue = processCountCommand(spokenNumbers);
         if (countValue !== null) {
-            const codeCommandData = {
-                command: 'count',
-                value: '',
-                countValue: countValue
-            };
-            console.log('codeCommandData',codeCommandData)
 
             // Get a reference to the "commandData" node in your database
             const commandDataRef = ref(database);
