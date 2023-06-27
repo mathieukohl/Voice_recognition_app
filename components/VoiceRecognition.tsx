@@ -52,7 +52,6 @@ let [started, setStarted] = useState(false);
   };
 
   const openApp = () => {
-    // Logic to open the app or perform related actions
     console.log('Opening the app...');
     setCommandData((prevCommandData) => [...prevCommandData, { command: 'open', value: undefined, countValue: undefined }]);
     setStatus('open');
@@ -60,7 +59,6 @@ let [started, setStarted] = useState(false);
   }
 
   const closeApp = () => {
-    // Logic to close the app or perform related actions
     console.log('Closing the app...');
     stopSpeechToText();
     setCommandData([]);
@@ -68,7 +66,7 @@ let [started, setStarted] = useState(false);
 
   const codeCommand = (params: string) => {
     const codeMatch = params
-    if (codeMatch !== null) {
+    if (/^\d+$/.test(codeMatch)) {
         const codeValue = processCodeCommand(codeMatch);
         console.log('codeValue',codeValue)
         if (codeValue !== null) {
@@ -112,23 +110,19 @@ let [started, setStarted] = useState(false);
           }, {
             onlyOnce: true
         });
-      } else {
+       } else {
         console.log('Invalid code'); // Handle invalid code numbers
-      }
+       }
+      } else {
+      console.log('Input should contain only numeric characters');
     }
   }
 
   const countCommand = (params: string) => {
     const spokenNumbers = params
-    if (spokenNumbers !== null) {
+    if (/^\d+$/.test(spokenNumbers)) {
         const countValue = processCountCommand(spokenNumbers);
         if (countValue !== null) {
-            const codeCommandData = {
-                command: 'count',
-                value: '',
-                countValue: countValue
-            };
-            console.log('codeCommandData',codeCommandData)
 
             // Get a reference to the "commandData" node in your database
             const commandDataRef = ref(database);
@@ -142,8 +136,6 @@ let [started, setStarted] = useState(false);
                 if (commandDataArray !== null) {
                 // Find the last code command data in the array
                 const lastCommandData = commandDataArray[commandDataArray.length - 1];
-
-                console.log("lastCodeCommandDataIndex", lastCommandData)
 
                 // Check if the lastCommandData exists
                 if (lastCommandData) {
@@ -167,6 +159,8 @@ let [started, setStarted] = useState(false);
         } else {
         console.log('Invalid code'); // Handle invalid code numbers
         }
+      } else {
+        console.log('Input should contain only numeric characters');
     }
   };
 
@@ -186,7 +180,6 @@ let [started, setStarted] = useState(false);
     onValue(commandDataRef, (snapshot: DataSnapshot) => {
       // Get the command data as an array
       const commandDataArray = snapshot.val();
-      console.log('commandDataArray', commandDataArray);
 
       // Check if the commandDataArray is not null
       if (commandDataArray !== null) {
