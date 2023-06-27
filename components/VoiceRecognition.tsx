@@ -111,25 +111,64 @@ let [started, setStarted] = useState(false);
             }
           }, {
             onlyOnce: true
-          });
-        } else {
-          console.log('Invalid code'); // Handle invalid code numbers
-        }
+        });
+      } else {
+        console.log('Invalid code'); // Handle invalid code numbers
       }
     }
+  }
 
   const countCommand = (params: string) => {
-    const value = parseInt(params.replace(/\s/g, ''), 10);
-    if (!isNaN(value)) {
-      console.log(`Count command: ${value}`);
-      //to test with the countValue: undefined
-      setCommandData((prevCommandData) => [...prevCommandData, { command: 'count', value, countValue: undefined }]);
-      setStatus('count');
-      setParameters(value.toString());
-    } else {
-      console.log('Invalid count command. Ignoring.');
+    const spokenNumbers = params
+    if (spokenNumbers !== null) {
+        const countValue = processCountCommand(spokenNumbers);
+        if (countValue !== null) {
+            const codeCommandData = {
+                command: 'count',
+                value: '',
+                countValue: countValue
+            };
+            console.log('codeCommandData',codeCommandData)
+
+            // Get a reference to the "commandData" node in your database
+            const commandDataRef = ref(database);
+
+            // Retrieve the current command data from the database
+            onValue(commandDataRef, (snapshot: DataSnapshot) => {
+                // Get the command data as an array
+                const commandDataArray = snapshot.val();
+
+                // Check if the commandDataArray is not null
+                if (commandDataArray !== null) {
+                // Find the last code command data in the array
+                const lastCommandData = commandDataArray[commandDataArray.length - 1];
+
+                console.log("lastCodeCommandDataIndex", lastCommandData)
+
+                // Check if the lastCommandData exists
+                if (lastCommandData) {
+                    // Update the countValue of the last command data
+                    lastCommandData.countValue = countValue;
+
+                    // Update the "commandData" node in the database with the updated command data
+                    set(commandDataRef, commandDataArray)
+                    .catch((error) => {
+                    console.error('Error updating command data:', error);
+                    });
+                } else {
+                    console.log('No code command found in the database');
+                }
+                } else {
+                console.log('Command data is null');
+                }
+            }, {
+                onlyOnce: true
+            });
+        } else {
+        console.log('Invalid code'); // Handle invalid code numbers
+        }
     }
-  }
+  };
 
   const resetCommand = () => {
     console.log('Reset command');
@@ -214,56 +253,23 @@ let [started, setStarted] = useState(false);
 
     if (!commandMatched) {
       console.log('Command not matched');
-}
+    }
   }
 
   const processCodeCommand = (spokenNumbers: string): { command: string; value: string } | null => {
-    const numberMap: { [key: string]: string } = {
-      zero: '0',
-      one: '1',
-      two: '2',
-      three: '3',
-      four: '4',
-      five: '5',
-      six: '6',
-      seven: '7',
-      eight: '8',
-      nine: '9',
-    };
-  
     const codeNumbers = spokenNumbers.split(' ');
     const codeValue = codeNumbers.join('');
 
     console.log('codeValue in process',codeValue)
-  
+
     return codeValue.length > 0 ? { command: 'code', value: codeValue } : null;
   };
 
-  const processCountCommand = (spokenNumbers: string[]): string | null => {
-    const numberMap: { [key: string]: string } = {
-      zero: '0',
-      one: '1',
-      two: '2',
-      three: '3',
-      four: '4',
-      five: '5',
-      six: '6',
-      seven: '7',
-      eight: '8',
-      nine: '9',
-    };
-  
-    const countValue = spokenNumbers
-    .map((spokenNumber) => {
-      const number = numberMap[spokenNumber];
-      console.log(`Spoken number: ${spokenNumber}, Mapped number: ${number}`);
-      return number;
-    })
-    .join('');
-
-    console.log(`Count value: ${countValue}`);
-  
-    return countValue.length > 0 && /^[0-9]+$/.test(countValue) ? countValue : null; // Return null if the count value is empty
+  const processCountCommand = (spokenNumbers: string): string | null => {    
+      const countNumbers = spokenNumbers.split(' ');
+      const countValue = countNumbers.join('');
+    
+      return countValue.length > 0 ? countValue : null;
   };
 
   const onSpeechError = (error:any) => {
