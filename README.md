@@ -1,4 +1,6 @@
-
+I had issues using the voice so I tested all the functions with a string command 
+- EX : const spokenText = 'count 1 8';
+- npx ts-node ./test.tsx
 
 Start the app 
  1. npx expo start
