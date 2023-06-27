@@ -2,8 +2,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState, useRef, MutableRefObject } from 'react';
 import Voice from '@react-native-voice/voice';
 import OutputList from './OutputList';
-import { database } from '../firebase'
-import { ref } from  'firebase/database';
+import { ref, onValue, DataSnapshot, set } from '@firebase/database';
+import { database } from '../firebase';
 
 /** to remove and fix the WARN */
 import { LogBox } from 'react-native';
@@ -66,6 +66,58 @@ let [started, setStarted] = useState(false);
     setCommandData([]);
   }
 
+  const codeCommand = (params: string) => {
+    const codeMatch = params
+    if (codeMatch !== null) {
+        const codeValue = processCodeCommand(codeMatch);
+        console.log('codeValue',codeValue)
+        if (codeValue !== null) {
+          const codeCommandData = {
+            command: 'code',
+            value: codeValue.value,
+            countValue: 0,
+          };
+          // Get a reference to the "commandData" node in your database
+          const commandDataRef = ref(database);
+    
+          // Retrieve the current command data from the database
+          onValue(commandDataRef, (snapshot: DataSnapshot) => {
+            // Get the command data as an array
+            const commandDataArray = snapshot.val();
+    
+            // Check if the commandDataArray is not null
+            if (commandDataArray !== null) {
+            
+              // Check if the code value already exists in the command data array
+              const existingCodeValue = commandDataArray.find(
+                (data: any) => data.command === 'code' && data.value === codeCommandData.value
+              );
+    
+              if (existingCodeValue) {
+                console.log('Code value already exists');
+                return;
+              }
+              
+              // Add the new code command data to the existing command data array
+              const updatedCommandDataArray = [...commandDataArray, codeCommandData];
+    
+              // Update the "commandData" node in the database with the updated command data
+              set(commandDataRef, updatedCommandDataArray)
+                .catch((error) => {
+                  console.error('Error updating command data:', error);
+                });
+            } else {
+              console.log('Command data is null');
+            }
+          }, {
+            onlyOnce: true
+          });
+        } else {
+          console.log('Invalid code'); // Handle invalid code numbers
+        }
+      }
+    }
+
   const countCommand = (params: string) => {
     const value = parseInt(params.replace(/\s/g, ''), 10);
     if (!isNaN(value)) {
@@ -84,15 +136,42 @@ let [started, setStarted] = useState(false);
     setCommandData([]);
   }
 
+  // Back Comamand, delete the last line of data
   const backCommand = () => {
     console.log('Back command');
-    setCommandData((prevCommandData) => prevCommandData.slice(0, -1));
-  }
+
+    // Get a reference to the "commandData" node in your database
+    const commandDataRef = ref(database);
+
+    // Retrieve the current command data from the database
+    onValue(commandDataRef, (snapshot: DataSnapshot) => {
+      // Get the command data as an array
+      const commandDataArray = snapshot.val();
+      console.log('commandDataArray', commandDataArray);
+
+      // Check if the commandDataArray is not null
+      if (commandDataArray !== null) {
+        // Remove the last element from the command data array
+        const updatedCommandDataArray = commandDataArray.slice(0, -1);
+
+        // Update the "commandData" node in the database with the updated command data
+        set(commandDataRef, updatedCommandDataArray)
+          .catch((error) => {
+            console.error('Error updating command data:', error);
+          });
+      } else {
+        console.log('Command data is null');
+      }
+    }, {
+      onlyOnce: true
+    });
+  };
 
   const commands = [
     { command: 'open', callback: openApp },
     //{ command: 'ouvrir', callback: openApp },
     { command: 'close', callback: closeApp },
+    { command: 'code', callback: codeCommand },
     { command: 'count', callback: countCommand },
     { command: 'reset', callback: resetCommand },
     { command: 'back', callback: backCommand },
@@ -122,112 +201,23 @@ let [started, setStarted] = useState(false);
     setSpokenText(spokenText);
     stopSpeechToText(); // Stop the speech recognition when any speech is detected
     setStarted(false);
-
-    // // Check if the spoken text matches the code command pattern
-    // const codeMatch = spokenText.match(/code (\w+)/);
-    // if (codeMatch) {
-    //   const codeNumbers = codeMatch[1].split(' '); // Split the spoken numbers by spaces
-    //   const codeValue = processCodeCommand(codeNumbers); // Process the spoken numbers as a code command
-    //   if (codeValue !== null) {
-    //     const codeCommandData = {
-    //       command: 'code',
-    //       value: codeValue.value,
-    //     };
-    //     setCommandData((prevCommandData) => [...prevCommandData, codeCommandData]);
-    //   } else {
-    //     console.log('Invalid code'); // Handle invalid code numbers
-    //   }
-    //   return;
-    // }
-
-    // Check if the spoken text matches the code command pattern
-    const codeMatch = spokenText.match(/code (\w+)/);
-    if (codeMatch) {
-      const codeNumbers = codeMatch[1].split(' '); // Split the spoken numbers by spaces
-      const codeValue = processCodeCommand(codeNumbers); // Process the spoken numbers as a code command
-      if (codeValue !== null) {
-        const codeCommandData = {
-          command: 'code',
-          value: codeValue.value,
-          countValue: undefined, 
-        };
-        // Add the codeCommandData to the Firebase database
-        database.ref('commands').push(codeCommandData)
-        .then(() => {
-          console.log('New line added to Firebase database');
-        })
-        .catch((error:any) => {
-          console.log('Error adding new line to Firebase database:', error);
-        });
-      } else {
-        console.log('Invalid code'); // Handle invalid code numbers
-      }
-      return;
-    }
-
-    // // Check if the spoken text matches the count command pattern
-    // const countMatch = spokenText.match(/count (\w+)/);
-    // if (countMatch) {
-    //   const countNumbers = countMatch[1].split(' '); // Split the spoken numbers by spaces
-    //   const countValue = processCountCommand(countNumbers); // Convert the spoken numbers to a numerical sequence
-    //   if (countValue !== null) {
-    //     const countCommandData = {
-    //       command: 'count',
-    //       value: countValue,
-
-    //     };
-    //     setCommandData((prevCommandData) => [...prevCommandData, countCommandData]);
-    //   } else {
-    //     console.log('Invalid number'); // Handle invalid numbers
-    //   }
-    //   return;
-    // }
-    // Check if the spoken text matches the count command pattern
-    const countMatch = spokenText.match(/count (\w+)/);
-    if (countMatch) {
-      const countNumbers = countMatch[1].split(' '); // Split the spoken numbers by spaces
-      const countValue = processCountCommand(countNumbers); // Convert the spoken numbers to a numerical sequence
-
-      if (countValue !== null) {
-        // Check if the value already exists in the data array
-        const existingIndex = data.findIndex(item => item.value === parseInt(countValue));
-
-        if (existingIndex !== -1) {
-          // Value already exists, update the countValue
-          const updatedData = [...data];
-          updatedData[existingIndex].countValue = parseInt(countValue);
-          setData(updatedData);
-        } else {
-          // Value doesn't exist, add a new data object
-          const countCommandData = {
-            command: 'code',
-            value: parseInt(countValue),
-            countValue: parseInt(countValue),
-          };
-          setData(prevData => [...prevData, countCommandData]);
-        }
-      } else {
-        console.log('Invalid number'); // Handle invalid numbers
-      }
-      return;
-    }
   
     const commandMatched = commands.some(({ command, callback }) => {
       if (spokenText.includes(command)) {
         const params = spokenText.replace(command, '').trim();
+        console.log('spokenText', spokenText);
         callback(params);
         return true;
       }
       return false;
     });
 
-
     if (!commandMatched) {
-      setResults(result.value); // Update the results array
-    }
+      console.log('Command not matched');
+}
   }
 
-  const processCodeCommand = (spokenNumbers: string[]): { command: string; value: string } | null => {
+  const processCodeCommand = (spokenNumbers: string): { command: string; value: string } | null => {
     const numberMap: { [key: string]: string } = {
       zero: '0',
       one: '1',
@@ -241,9 +231,10 @@ let [started, setStarted] = useState(false);
       nine: '9',
     };
   
-    const codeValue = spokenNumbers
-      .map((spokenNumber) => numberMap[spokenNumber])
-      .join('');
+    const codeNumbers = spokenNumbers.split(' ');
+    const codeValue = codeNumbers.join('');
+
+    console.log('codeValue in process',codeValue)
   
     return codeValue.length > 0 ? { command: 'code', value: codeValue } : null;
   };
