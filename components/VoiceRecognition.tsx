@@ -1,11 +1,13 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useState, useRef, MutableRefObject } from 'react';
-import Voice from '@react-native-voice/voice';
-import OutputList from './OutputList';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { ref, onValue, DataSnapshot, set } from '@firebase/database';
 import { database } from '../firebase';
-import '../locales/index';
 import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState, useRef, MutableRefObject } from 'react';
+import Voice from '@react-native-voice/voice';
+import '../locales/index';
+
+import OutputList from './OutputList';
+import CommandInfo from './CommandInfo';
 
 /** to remove and fix the WARN */
 import { LogBox } from 'react-native';
@@ -28,6 +30,7 @@ export default function VoiceRecognition() {
   let [commandData, setCommandData] = useState<CommandData[]>([]);
   let [selectedLanguage, setSelectedLanguage] = useState("en-US"); // Default language is "en-US"
   let [showDropdown, setShowDropdown] = useState(false);
+  let [showCommandInfo, setShowCommandInfo] = useState(false);
   let [message, setMessage] = useState('');
   let isSpeechStopped = false;
 
@@ -362,6 +365,10 @@ export default function VoiceRecognition() {
     setShowDropdown(!showDropdown);
   };
 
+  const toggleCommandInfo = () => {
+    setShowCommandInfo(!showCommandInfo);
+  };
+
   function showMessage(message: string) {
     setMessage(message);
   }
@@ -404,6 +411,9 @@ export default function VoiceRecognition() {
       <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
         <Text style={styles.dropdownButtonText}>{selectedLanguage}</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.dropdownButton} onPress={toggleCommandInfo}>
+        <Image source={require('../assets/infoLogo.png')} style={styles.commandButtonImage} />
+      </TouchableOpacity>
     </View>
   {/* Dropdown list */}
   {showDropdown && (
@@ -423,6 +433,7 @@ export default function VoiceRecognition() {
         {/* Add more language options as needed */}
       </View>
     )}
+    {showCommandInfo && <CommandInfo />}
   </View>
   );
 }
@@ -531,6 +542,10 @@ export default function VoiceRecognition() {
     marginTop: 10,
     marginHorizontal: 10,
     width: '95%',
+  },
+  commandButtonImage: {
+    width: 20,
+    height: 20,
   },
 
 });
