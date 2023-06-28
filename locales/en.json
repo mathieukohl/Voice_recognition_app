@@ -25,5 +25,17 @@
         "commandText": "Command :",
         "valueText": "Code :",
         "countText": "Quantity :"
+    },
+    "commandInfo": {
+        "availableCommands": "Available Commands :",
+        "code": "- Code (add a new product)",
+        "count": "- Count (add quantity to the product)",
+        "Rest": "- Rest (reset the previous command)",
+        "Back": "- Back (remove the last code)",
+        "newCodeInfo": "Enter new code :",
+        "info1": "1. Use the command code to add a new code",
+        "info2": "2. Use the command count to add quantity to this new code",
+        "info3": "3. If you made a mistake use the command reset to delete the wrong code",
+        "warning": "! Use only number from 0-9, if the code is 13534. You will say Code One Three Five Three Four !"
     }
 }

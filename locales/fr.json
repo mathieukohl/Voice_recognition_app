@@ -25,5 +25,17 @@
         "commandText": "Commande :",
         "valueText": "Code :",
         "countText": "Quantité :"
+    },
+    "commandInfo": {
+        "availableCommands": "Commandes disponibles :",
+        "code": "- Code (ajouter un nouveau produit)",
+        "count": "- Compter (ajouter une quantité au produit)",
+        "Rest": "- Remettre à zéro (réinitialiser la commande précédente)",
+        "Back": "- Retour (supprimer le dernier code)",
+        "newCodeInfo": "Entrez le nouveau code :",
+        "info1": "1. utilisez le code de commande Code pour ajouter un nouveau produit",
+        "info2": "2. utilisez la commande Compter pour ajouter une quantité à ce nouveau code",
+        "info3": "3. Si vous avez fait une erreur, utilisez la commande Remettre à zéro pour supprimer le code erroné",
+        "warning": "! N'utilisez que des chiffres de 0 à 9, si le code est 13534. Vous direz Code Un Trois Cinq Trois Quatre !"
     }
 }

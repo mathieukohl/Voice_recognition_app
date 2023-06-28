@@ -1,21 +1,25 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import '../locales/index';
+import { useTranslation } from 'react-i18next';
 
 const CommandInfo = () => {
+
+  const {t} = useTranslation();
   return (
     <View style={styles.infoBox}>
-      <Text style={styles.infoText}>Available Commands:</Text>
-      <Text style={styles.infoText}>- Code (add a new product)</Text>
-      <Text style={styles.infoText}>- Count (add quantity to the product)</Text>
-      <Text style={styles.infoText}>- Rest (reset the previous command)</Text>
-      <Text style={styles.infoText}>- Back (remove the last code)</Text>
+      <Text style={styles.infoText}>{t('commandInfo.availableCommands')}</Text>
+      <Text style={styles.infoText}>{t('commandInfo.code')}</Text>
+      <Text style={styles.infoText}>{t('commandInfo.count')}</Text>
+      <Text style={styles.infoText}>{t('commandInfo.Rest')}</Text>
+      <Text style={styles.infoText}>{t('commandInfo.Back')}</Text>
       <Text style={styles.infoText}> </Text>
-      <Text style={styles.infoText}>Enter new code :</Text>
-      <Text style={styles.infoText}>1. Use the command code to add a new code</Text>
-      <Text style={styles.infoText}>2. Use the command count to add quantity to this new code</Text>
-      <Text style={styles.infoText}>3. If you made a mistake use the command reset to delete the wrong code</Text>
+      <Text style={styles.infoText}>{t('commandInfo.newCodeInfo')}</Text>
+      <Text style={styles.infoText}>{t('commandInfo.info1')}</Text>
+      <Text style={styles.infoText}>{t('commandInfo.info2')}</Text>
+      <Text style={styles.infoText}>{t('commandInfo.info3')}</Text>
       <Text style={styles.infoText}> </Text>
-      <Text style={styles.infoText}>! Use only number from 0-9, if the code is 13534. You will say Code One Three Five Three Four !</Text>
+      <Text style={styles.infoText}>{t('commandInfo.warning')}</Text>
     </View>
   );
 };
