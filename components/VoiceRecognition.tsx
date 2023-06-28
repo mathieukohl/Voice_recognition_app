@@ -4,13 +4,15 @@ import Voice from '@react-native-voice/voice';
 import OutputList from './OutputList';
 import { ref, onValue, DataSnapshot, set } from '@firebase/database';
 import { database } from '../firebase';
+import '../locales/index';
+import { useTranslation } from 'react-i18next';
 
 /** to remove and fix the WARN */
 import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
 LogBox.ignoreAllLogs(); //Ignore all log notifications
 
-type CommandData = {
+  type CommandData = {
     command: string;
     value?: string | number;
     countValue?: number;
@@ -18,19 +20,18 @@ type CommandData = {
 
 export default function VoiceRecognition() {
 
-let [started, setStarted] = useState(false);
-  let [results, setResults] = useState([]);
+  let [started, setStarted] = useState(false);
   let [listening, setListening] = useState(false);
   let [status, setStatus] = useState('');
   let [parameters, setParameters] = useState('');
   let [spokenText, setSpokenText] = useState('');
   let [commandData, setCommandData] = useState<CommandData[]>([]);
-  let [data, setData] = useState<CommandData[]>([]);
   let [selectedLanguage, setSelectedLanguage] = useState("en-US"); // Default language is "en-US"
   let [showDropdown, setShowDropdown] = useState(false);
   let [message, setMessage] = useState('');
-
   let isSpeechStopped = false;
+
+  const {t, i18n} = useTranslation();
   const recognitionTimeoutRef: MutableRefObject<ReturnType<typeof setTimeout> | null> = useRef(null);
   const [timeoutRef, setTimeoutRef] = useState<NodeJS.Timeout | null>(null);
 
@@ -45,6 +46,15 @@ let [started, setStarted] = useState(false);
 
   const handleLanguageChange = (language:any) => {
     setSelectedLanguage(language);
+
+    if (language === 'en-US') {
+      i18n.changeLanguage('en')
+    } else if (language === 'fr-FR') {
+      i18n.changeLanguage('fr')
+    } else {
+      i18n.changeLanguage('en')
+    }
+
     if (started) {
       stopSpeechToText();
       startSpeechToText();
@@ -99,11 +109,12 @@ let [started, setStarted] = useState(false);
             value: codeValue.value,
             countValue: 0,
           };
-          // Get a reference to the "commandData" node in your database
+          // Get a reference to the "commandData" node in the database
           const commandDataRef = ref(database);
     
           // Retrieve the current command data from the database
           onValue(commandDataRef, (snapshot: DataSnapshot) => {
+
             // Get the command data as an array
             const commandDataArray = snapshot.val();
     
@@ -124,6 +135,7 @@ let [started, setStarted] = useState(false);
               const updatedCommandDataArray = [...commandDataArray, codeCommandData];
               
               setParameters(codeCommandData.value);
+
               // Update the "commandData" node in the database with the updated command data
               set(commandDataRef, updatedCommandDataArray)
                 .catch(() => {
@@ -136,12 +148,19 @@ let [started, setStarted] = useState(false);
             onlyOnce: true
         });
        } else {
-        showMessage('Invalid code'); // Handle invalid code numbers
+        showMessage('Invalid code');
        }
       } else {
       showMessage('Input should contain only numeric characters');
     }
   }
+
+
+  /** 
+   * I wanted to add a feature that allows searching for any code in the database 
+   * and then being able to add the new countValue to it. In this case, the countValue 
+   * will only be added to the last code in the database.
+  */
 
   const countCommand = (params: string) => {
     setStatus('Count');
@@ -157,21 +176,24 @@ let [started, setStarted] = useState(false);
         const countValue = processCountCommand(modifiedSpokenNumbers);
         if (countValue !== null) {
 
-            // Get a reference to the "commandData" node in your database
+            // Get a reference to the "commandData" node in the database
             const commandDataRef = ref(database);
 
             // Retrieve the current command data from the database
             onValue(commandDataRef, (snapshot: DataSnapshot) => {
+
                 // Get the command data as an array
                 const commandDataArray = snapshot.val();
 
                 // Check if the commandDataArray is not null
                 if (commandDataArray !== null) {
+
                 // Find the last code command data in the array
                 const lastCommandData = commandDataArray[commandDataArray.length - 1];
 
                 // Check if the lastCommandData exists
                 if (lastCommandData) {
+
                     // Update the countValue of the last command data
                     lastCommandData.countValue = countValue;
 
@@ -201,23 +223,51 @@ let [started, setStarted] = useState(false);
 
   const resetCommand = () => {
     setStatus('Reset');
-    setCommandData([]);
+
+    // Get a reference to the "commandData" node in the database
+    const commandDataRef = ref(database);
+
+    // Retrieve the current command data from the database
+    onValue(commandDataRef, (snapshot: DataSnapshot) => {
+
+      // Get the command data as an array
+      const commandDataArray = snapshot.val();
+
+      // Check if the commandDataArray is not null
+      if (commandDataArray !== null) {
+        
+        // Remove the last element from the command data array
+        const updatedCommandDataArray = commandDataArray.slice(0, -1);
+
+        // Update the "commandData" node in the database with the updated command data
+        set(commandDataRef, updatedCommandDataArray)
+          .catch((error) => {
+            console.error('Error updating command data:', error);
+          });
+      } else {
+        console.log('Command data is null');
+      }
+    }, {
+      onlyOnce: true
+    });
   }
 
   // Back Comamand, delete the last line of data
   const backCommand = () => {
     setStatus('Back');
 
-    // Get a reference to the "commandData" node in your database
+    // Get a reference to the "commandData" node in the database
     const commandDataRef = ref(database);
 
     // Retrieve the current command data from the database
     onValue(commandDataRef, (snapshot: DataSnapshot) => {
+
       // Get the command data as an array
       const commandDataArray = snapshot.val();
 
       // Check if the commandDataArray is not null
       if (commandDataArray !== null) {
+
         // Remove the last element from the command data array
         const updatedCommandDataArray = commandDataArray.slice(0, -1);
 
@@ -235,13 +285,12 @@ let [started, setStarted] = useState(false);
   };
 
   const commands = [
-    { command: 'open', callback: openApp },
-    //{ command: 'ouvrir', callback: openApp },
-    { command: 'close', callback: closeApp },
-    { command: 'code', callback: codeCommand },
-    { command: 'count', callback: countCommand },
-    { command: 'reset', callback: resetCommand },
-    { command: 'back', callback: backCommand },
+    { command: t('command.open'), callback: openApp },
+    { command: t('command.close'), callback: closeApp },
+    { command: t('command.code'), callback: codeCommand },
+    { command: t('command.count'), callback: countCommand },
+    { command: t('command.reset'), callback: resetCommand },
+    { command: t('command.back'), callback: backCommand },
     // Add more commands as needed
   ];
 
@@ -320,19 +369,19 @@ let [started, setStarted] = useState(false);
   return ( 
   <View style={styles.container}>
     <View style={styles.statusContainer}>
-      <Text style={styles.statusTitle}>Current Status</Text>
-      <Text style={styles.status}>Status: {status}</Text>
-      <Text style={styles.parametersTitle}>Parameters: {parameters}</Text>
+      <Text style={styles.statusTitle}>{t('textDisplay.currentStatus')}</Text>
+      <Text style={styles.status}>{t('textDisplay.status')} {status}</Text>
+      <Text style={styles.parametersTitle}>{t('textDisplay.parameters')} {parameters}</Text>
     </View>
     <View style={styles.speechContainer}>
-      <Text style={styles.speechTitle}>Current Speech</Text>
+      <Text style={styles.speechTitle}>{t('textDisplay.currentSpeech')}</Text>
       <Text style={styles.speech}>{spokenText}</Text>
     </View>
     <View>
       {message ? <Text style={styles.speechContainer} id="message">{message}</Text> : undefined }
     </View>
     <View>
-      {listening ? <Text style={styles.listeningContainer}>listening...</Text> : undefined}
+      {listening ? <Text style={styles.listeningContainer}>{t('textDisplay.isListening')}</Text> : undefined}
     </View>
 
     <OutputList />
@@ -340,14 +389,14 @@ let [started, setStarted] = useState(false);
     <View style={styles.bottomMenu}>
       {!listening ? (
         <TouchableOpacity style={styles.menuItem} onPress={startSpeechToText}>
-          <Text style={styles.menuItemText}>Start to Listen</Text>
+          <Text style={styles.menuItemText}>{t('button.starToListen')}</Text>
         </TouchableOpacity>
       ) : (
         undefined
       )}
       {listening ? (
         <TouchableOpacity style={styles.menuItem} onPress={stopSpeechToText}>
-          <Text style={styles.menuItemText}>Stop Listening</Text>
+          <Text style={styles.menuItemText}>{t('button.stopToListen')}</Text>
         </TouchableOpacity>
       ) : (
         undefined
@@ -363,13 +412,13 @@ let [started, setStarted] = useState(false);
           style={styles.dropdownListItem}
           onPress={() => handleLanguageChange('en-US')}
         >
-          <Text style={styles.dropdownListItemText}>English</Text>
+          <Text style={styles.dropdownListItemText}>{t('language.english')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.dropdownListItem}
           onPress={() => handleLanguageChange('fr-FR')}
-        >
-          <Text style={styles.dropdownListItemText}>French</Text>
+        > 
+          <Text style={styles.dropdownListItemText}>{t('language.french')}</Text>
         </TouchableOpacity>
         {/* Add more language options as needed */}
       </View>

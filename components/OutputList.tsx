@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { ref, onValue, DataSnapshot } from  '@firebase/database';
 import { database } from '../firebase'
+import '../locales/index';
+import { useTranslation } from 'react-i18next';
 
 type OutputData = {
   command: string;
@@ -13,6 +15,7 @@ type OutputData = {
 export default function OutputList() {
 
   const [data, setData] = useState<OutputData[]>([]);
+  const {t} = useTranslation();
   
   useEffect(() => {
     const fetchData = () => {
@@ -31,15 +34,15 @@ export default function OutputList() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Values</Text> 
+      <Text style={styles.title}>{t('textDisplay.valuesTitle')}</Text> 
       <FlatList
         data={data}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.itemContainer}>
-            <Text style={styles.itemText}>Command : {item.command}</Text>
-            <Text style={styles.itemText}>Value : {item.value}</Text>
-            <Text style={styles.itemText}>Count : {item.countValue}</Text>
+            <Text style={styles.itemText}>{t('textDisplay.commandText')} {item.command}</Text>
+            <Text style={styles.itemText}>{t('textDisplay.valueText')} {item.value}</Text>
+            <Text style={styles.itemText}>{t('textDisplay.countText')} {item.countValue}</Text>
           </View>
         )}
       />

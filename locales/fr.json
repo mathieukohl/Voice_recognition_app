@@ -1,0 +1,29 @@
+{
+    "command": {
+        "open": "ouvrir",
+        "close": "fermer",
+        "code": "code",
+        "count": "compter",
+        "reset": "remettre à zéro",
+        "back": "retour"
+    },
+    "button": {
+        "starToListen": "Commencer à écouter",
+        "stopToListen": "Arrêter d'écouter"
+    },
+    "language": {
+        "english": "Anglais",
+        "french": "Francais"
+    },
+    "textDisplay": {
+        "currentStatus": "Statut actuel",
+        "status": "Status :",
+        "parameters": "Paramètres :",
+        "currentSpeech": "Discours actuel",
+        "isListening": "écoute...",
+        "valuesTitle": "Valeurs",
+        "commandText": "Commande :",
+        "valueText": "Code :",
+        "countText": "Quantité :"
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "command": {
+        "open": "open",
+        "close": "close",
+        "code": "code",
+        "count": "count",
+        "reset": "reset",
+        "back": "back"
+    },
+    "button": {
+        "starToListen": "Start to listen",
+        "stopToListen": "Stop Listening"
+    },
+    "language": {
+        "english": "English",
+        "french": "French"
+    },
+    "textDisplay": {
+        "currentStatus": "Current Status",
+        "status": "Status :",
+        "parameters": "Parameters :",
+        "currentSpeech": "Current Speech",
+        "isListening": "listening...",
+        "valuesTitle": "Values",
+        "commandText": "Command :",
+        "valueText": "Code :",
+        "countText": "Quantity :"
+    }
+}
