@@ -20,6 +20,8 @@ export default function OutputList() {
   useEffect(() => {
     const fetchData = () => {
       const dataRef = ref(database);
+      // Listen for changes in the data at the specified reference
+      // and execute the callback function when the data changes
       onValue(dataRef, (snapshot: DataSnapshot) => {
         const dataFromFirebase = snapshot.val();
         if (dataFromFirebase) {
