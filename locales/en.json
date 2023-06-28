@@ -37,5 +37,15 @@
         "info2": "2. Use the command count to add quantity to this new code",
         "info3": "3. If you made a mistake use the command reset to delete the wrong code",
         "warning": "! Use only number from 0-9, if the code is 13534. You will say Code One Three Five Three Four !"
+    },
+    "errors": {
+        "CommandNotMatched": "Command not matched",
+        "codeAlreadyExist": "Code value already exists",
+        "errorUpdating": "Error updating command data",
+        "dataIsNull": "Command data is null",
+        "invalidCode": "Invalid code",
+        "invalidValue": "Invalid value",
+        "shouldContainCharacters": "Input should contain only numeric characters",
+        "NoCommandFound":"No code command found in the database"
     }
 }

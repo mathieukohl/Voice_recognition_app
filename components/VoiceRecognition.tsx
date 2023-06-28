@@ -130,7 +130,7 @@ export default function VoiceRecognition() {
               );
     
               if (existingCodeValue) {
-                showMessage('Code value already exists');
+                showMessage(t('errors.codeAlreadyExist'));
                 return;
               }
               
@@ -142,19 +142,19 @@ export default function VoiceRecognition() {
               // Update the "commandData" node in the database with the updated command data
               set(commandDataRef, updatedCommandDataArray)
                 .catch(() => {
-                  showMessage('Error updating command data:');
+                  showMessage(t('errors.errorUpdating'));
                 });
             } else {
-              showMessage('Command data is null');
+              showMessage(t('errors.dataIsNull'));
             }
           }, {
             onlyOnce: true
         });
        } else {
-        showMessage('Invalid code');
+        showMessage(t('errors.invalidCode'));
        }
       } else {
-      showMessage('Input should contain only numeric characters');
+      showMessage(t('errors.shouldContainCharacters'));
     }
   }
 
@@ -205,22 +205,22 @@ export default function VoiceRecognition() {
                     // Update the "commandData" node in the database with the updated command data
                     set(commandDataRef, commandDataArray)
                     .catch(() => {
-                    showMessage('Error updating command data:');
+                    showMessage(t('errors.errorUpdating'));
                     });
                 } else {
-                  showMessage('No code command found in the database');
+                  showMessage(t('errors.NoCommandFound'));
                 }
               } else {
-              showMessage('Command data is null');
+              showMessage(t('errors.dataIsNull'));
               }
             }, {
                 onlyOnce: true
             });
         } else {
-        showMessage('Invalid value');
+        showMessage(t('errors.invalidValue'));
         }
       } else {
-      showMessage('Input should contain only numeric characters');
+      showMessage(t('errors.shouldContainCharacters'));
     }
   };
 
@@ -332,7 +332,7 @@ export default function VoiceRecognition() {
     });
 
     if (!commandMatched) {
-      showMessage('Command not matched');
+      showMessage(t('errors.CommandNotMatched'));
     }
   }
 

@@ -37,5 +37,15 @@
         "info2": "2. utilisez la commande Compter pour ajouter une quantité à ce nouveau code",
         "info3": "3. Si vous avez fait une erreur, utilisez la commande Remettre à zéro pour supprimer le code erroné",
         "warning": "! N'utilisez que des chiffres de 0 à 9, si le code est 13534. Vous direz Code Un Trois Cinq Trois Quatre !"
+    },
+    "errors" : {
+        "CommandNotMatched": "Commande non conforme",
+        "codeAlreadyExist" : "La valeur du code existe déjà",
+        "errorUpdating" : "Erreur de mise à jour des données de commande",
+        "dataIsNull" : "Les données de la commande sont nulles",
+        "invalidCode" : "Code non valide",
+        "invalidValue": "Valeur non valide",
+        "shouldContainCharacters" : "L'entrée ne doit contenir que des caractères numériques",
+        "NoCommandFound" : "Aucune commande n'a été trouvée dans la base de données"
     }
 }
